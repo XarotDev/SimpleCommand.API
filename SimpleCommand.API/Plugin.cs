@@ -48,15 +48,68 @@ namespace SimpleCommand.API
         {
             SimpleCommandModule commandListModule = new SimpleCommandModule
             {
-                displayName = "modcommands",
-                bHideFromCommandList = true,
-                bHasDynamicInput = true,
-                method = SimpleCommand.ShowModCommands,
-                abbreviations = new[] {"mdc", "modc", "modcmds"}
+                DisplayName = "modcommands",
+                HideFromCommandList = true,
+                HasDynamicInput = true,
+                Method = ShowModCommands,
+                Abbreviations = new[] {"mdc", "modc", "modcmds"}
             };
 
             SimpleCommand.AddSimpleCommand(commandListModule);
             
+        }
+
+        // Method to show all commands in list
+        private static TerminalNode ShowModCommands(Terminal __instance)
+        {
+            string list = "All available mod commands: \n";
+            TerminalNode node = ScriptableObject.CreateInstance<TerminalNode>();
+            node.clearPreviousText = true;
+
+            string input = SimpleCommand.GetInputValue(__instance, 1)[0];
+
+            int requestedPageNum = 1;
+            int highestPageNumber = 1;
+
+            if (int.TryParse(input, out int result))
+            {
+                if (result > 1)
+                {
+                    requestedPageNum = result;
+                }
+                else
+                {
+                    requestedPageNum = 1;
+                }
+            }
+
+            if (SimpleCommand.SimpleCommandDictionary != null && SimpleCommand.SimpleCommandDictionary.Count > 0)
+            {
+                highestPageNumber = SimpleCommand.SimpleCommandDictionary.Last().Key;
+
+                if (requestedPageNum > highestPageNumber)
+                {
+                    requestedPageNum = highestPageNumber;
+                }
+
+                if (SimpleCommand.SimpleCommandDictionary.TryGetValue(requestedPageNum, out var stringList))
+                {
+                    foreach (string str in stringList)
+                    {
+                        if (!string.IsNullOrEmpty(str))
+                        {
+                            list += str;
+                        }
+                    }
+                }
+
+            }
+
+            list += "\nPage " + requestedPageNum + " of " + highestPageNumber + "\n";
+
+            node.displayText = list;
+
+            return node;
         }
     }
 
@@ -72,17 +125,17 @@ namespace SimpleCommand.API
         public static void AddSimpleCommand(SimpleCommandModule module)
         {
 
-            if (module.displayName != null)
+            if (module.DisplayName != null)
             {
                 SimpleCommandList.Add(module);
                 if (Plugin.configSimpleCommandLogging.Value)
                 {
-                    Plugin.Log.LogDebug("Module " + module.displayName + " was successfully registered by SimpleCommand.API.");
+                    Plugin.Log.LogDebug("Module " + module.DisplayName + " was successfully registered by SimpleCommand.API.");
                 }
             }
             else
             {
-                Plugin.Log.LogWarning("Warning, displayName of module not assigned. Module will not load!");
+                Plugin.Log.LogWarning("Warning, DisplayName of module not assigned. Module will not load!");
             }
         }
 
@@ -104,98 +157,6 @@ namespace SimpleCommand.API
                 if (!char.IsPunctuation(c)) stringBuilder.Append(c);
             }
             return stringBuilder.ToString().ToLower();
-        }
-
-        // Method to show all commands in list
-        public static TerminalNode ShowModCommands(Terminal __instance)
-        {
-            string list = "All available mod commands: \n";
-            TerminalNode node = ScriptableObject.CreateInstance<TerminalNode>();
-            node.clearPreviousText = true;
-
-            string input = GetInputValue(__instance, 1)[0];
-  
-            int requestedPageNum = 1;
-            int highestPageNumber = 1;
-
-            if (int.TryParse(input, out int result))
-            {
-                if (result > 1)
-                {
-                    requestedPageNum = result;
-                }
-                else
-                {
-                    requestedPageNum = 1;
-                }
-            }
-
-            if (SimpleCommandDictionary != null && SimpleCommandDictionary.Count > 0)
-            {
-                highestPageNumber = SimpleCommandDictionary.Last().Key;
-
-                if (requestedPageNum > highestPageNumber)
-                {
-                    requestedPageNum = highestPageNumber;
-                }
-
-                if (SimpleCommandDictionary.TryGetValue(requestedPageNum, out var stringList))
-                {
-                    foreach (string str in stringList)
-                    {
-                        if (!string.IsNullOrEmpty(str))
-                        {
-                            list += str;
-                        }
-                    }
-                }
-                
-            }
-
-            list += "\nPage " + requestedPageNum + " of " + highestPageNumber + "\n";
-
-            node.displayText = list;
-
-            return node;
-        }
-
-        public static void AddChildrenToList(SimpleCommandModule module, string nestedString, List<string> commands)
-        {
-            string nestedText = nestedString + " " + module.displayName.ToUpper();
-            if (module.bHideFromCommandList == false)
-            {
-                string text = "\n>" + nestedText;
-                if (module.parameter != null && module.bHasDynamicInput)
-                {
-                    foreach (string parameter in module.parameter)
-                    {
-                        text += " [" + parameter.ToLower() + "]";
-                    }
-                }
-                if (module.abbreviations != null)
-                {
-                    text += " (short. ";
-                    foreach (string abbreviation in module.abbreviations)
-                    {
-                        text += abbreviation.ToLower() + ", ";
-                    }
-                    text = text[..^2] + ")";
-                }
-                text += "\n";
-
-                if (module.description != null)
-                {
-                    text += module.description + "\n";
-                }
-                commands.Add(text);
-            }
-            if (module.childrenModules != null)
-            {
-                foreach (SimpleCommandModule childModule in module.childrenModules)
-                {
-                    AddChildrenToList(childModule, nestedText, commands);
-                }
-            }
         }
 
         public static string GetInputValue(Terminal terminal)

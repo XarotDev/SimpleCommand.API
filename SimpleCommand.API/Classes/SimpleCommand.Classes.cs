@@ -4,15 +4,15 @@ namespace SimpleCommand.API.Classes
 {
     public class SimpleCommandModule
     {
-        public string displayName { get; set; }
-        public string description { get; set; }
-        public string[] abbreviations { get; set; }
-        public string[] parameter { get; set; }
-        public bool bHasDynamicInput { get; set; }
-        public bool bHideFromCommandList { get; set; }
-        public bool bSkipModuleOnSubmit { get; set; }
-        public Func<Terminal, TerminalNode> method { get; set; }
-        public SimpleCommandModule[] childrenModules { get; set; }
+        public string DisplayName { get; set; }
+        public string Description { get; set; }
+        public string[] Abbreviations { get; set; }
+        public string[] Arguments { get; set; }
+        public bool HasDynamicInput { get; set; }
+        public bool HideFromCommandList { get; set; }
+        public bool IgnoreModule { get; set; }
+        public Func<Terminal, TerminalNode> Method { get; set; }
+        public SimpleCommandModule[] ChildrenModules { get; set; }
 
     }
 

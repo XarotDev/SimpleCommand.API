@@ -32,21 +32,21 @@ namespace SimpleCommand.API.Patches
             {
                 foreach (SimpleCommandModule module in SimpleCommandList)
                 {
-                    if (module.bHideFromCommandList == false)
+                    if (module.HideFromCommandList == false)
                     {
                         string text = "";
-                        text += "\n>" + module.displayName.ToUpper();
-                        if (module.parameter != null && module.bHasDynamicInput)
+                        text += "\n>" + module.DisplayName.ToUpper();
+                        if (module.Arguments != null && module.HasDynamicInput)
                         {
-                            foreach (string param in module.parameter)
+                            foreach (string param in module.Arguments)
                             {
                                 text += " [" + param.ToLower() + "]";
                             }
                         }
-                        if (module.abbreviations != null)
+                        if (module.Abbreviations != null)
                         {
                             text += " (short. ";
-                            foreach (string abbreviation in module.abbreviations)
+                            foreach (string abbreviation in module.Abbreviations)
                             {
                                 text += abbreviation.ToLower() + ", ";
                             }
@@ -54,17 +54,17 @@ namespace SimpleCommand.API.Patches
                         }
                         text += "\n";
 
-                        if (module.description != null)
+                        if (module.Description != null)
                         {
-                            text += module.description + "\n";
+                            text += module.Description + "\n";
                         }
                         commands.Add(text);
                     }
-                    if (module.childrenModules != null)
+                    if (module.ChildrenModules != null)
                     {
-                        foreach (SimpleCommandModule childModule in module.childrenModules)
+                        foreach (SimpleCommandModule childModule in module.ChildrenModules)
                         {
-                            AddChildrenToList(childModule, module.displayName.ToUpper(), commands);
+                            AddChildrenToList(childModule, module.DisplayName.ToUpper(), commands);
                         }
                     }
                 }
@@ -141,10 +141,10 @@ namespace SimpleCommand.API.Patches
                             break;
                         }
 
-                        if (module.displayName != null && screenTextArray[0].Replace(" ", "").Equals(module.displayName.ToLower()))
+                        if (module.DisplayName != null && screenTextArray[0].Replace(" ", "").Equals(module.DisplayName.ToLower()))
                         {
 
-                            if (module.bSkipModuleOnSubmit == true)
+                            if (module.IgnoreModule == true)
                             {
                                 return true;
                             }
@@ -161,26 +161,26 @@ namespace SimpleCommand.API.Patches
 
                             if (screenTextArray.Length > 1)
                             {
-                                if (module.bHasDynamicInput)
+                                if (module.HasDynamicInput)
                                 {
-                                    if (module.method != null)
+                                    if (module.Method != null)
                                     {
-                                        __instance.LoadNewNode(module.method(__instance));
+                                        __instance.LoadNewNode(module.Method(__instance));
                                         if (Plugin.configSimpleCommandLogging.Value)
                                         {
-                                            Plugin.Log.LogDebug("Method from module " + module.displayName + " successfully invoked.");
+                                            Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                                         }
                                         LoadNecessarySubmitActions(__instance);
                                         return false;
                                     }
                                     else
                                     {
-                                        Plugin.Log.LogDebug("No method found for module " + module.displayName);
+                                        Plugin.Log.LogDebug("No Method found for module " + module.DisplayName);
                                     }
                                 }
-                                else if (module.childrenModules != null)
+                                else if (module.ChildrenModules != null)
                                 {
-                                    foreach (SimpleCommandModule childModule in module.childrenModules)
+                                    foreach (SimpleCommandModule childModule in module.ChildrenModules)
                                     {
                                         if (IterateThroughChildren(childModule, __instance, screenTextArray, 1))
                                         {
@@ -192,25 +192,25 @@ namespace SimpleCommand.API.Patches
                             }
                             else
                             {
-                                if (module.method != null)
+                                if (module.Method != null)
                                 {
-                                    __instance.LoadNewNode(module.method(__instance));
+                                    __instance.LoadNewNode(module.Method(__instance));
                                     if (Plugin.configSimpleCommandLogging.Value)
                                     {
-                                        Plugin.Log.LogDebug("Method from module " + module.displayName + " successfully invoked.");
+                                        Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                                     }
                                     LoadNecessarySubmitActions(__instance);
                                     return false;
                                 }
                                 else
                                 {
-                                    Plugin.Log.LogDebug("No method found for module " + module.displayName);
+                                    Plugin.Log.LogDebug("No Method found for module " + module.DisplayName);
                                 }
                             }
                         }
-                        else if (module.abbreviations != null)
+                        else if (module.Abbreviations != null)
                         {
-                            foreach (string abbreviation in module.abbreviations)
+                            foreach (string abbreviation in module.Abbreviations)
                             {
                                 if (screenTextArray[0].Replace(" ", "").Equals(abbreviation))
                                 {
@@ -221,26 +221,26 @@ namespace SimpleCommand.API.Patches
 
                                     if (screenTextArray.Length > 1)
                                     {
-                                        if (module.bHasDynamicInput)
+                                        if (module.HasDynamicInput)
                                         {
-                                            if (module.method != null)
+                                            if (module.Method != null)
                                             {
-                                                __instance.LoadNewNode(module.method(__instance));
+                                                __instance.LoadNewNode(module.Method(__instance));
                                                 if (Plugin.configSimpleCommandLogging.Value)
                                                 {
-                                                    Plugin.Log.LogDebug("Method from module " + module.displayName + " successfully invoked.");
+                                                    Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                                                 }
                                                 LoadNecessarySubmitActions(__instance);
                                                 return false;
                                             }
                                             else
                                             {
-                                                Plugin.Log.LogDebug("No method found for module " + module.displayName);
+                                                Plugin.Log.LogDebug("No Method found for module " + module.DisplayName);
                                             }
                                         }
-                                        else if (module.childrenModules != null)
+                                        else if (module.ChildrenModules != null)
                                         {
-                                            foreach (SimpleCommandModule childModule in module.childrenModules)
+                                            foreach (SimpleCommandModule childModule in module.ChildrenModules)
                                             {
                                                 if (IterateThroughChildren(childModule, __instance, screenTextArray, 1))
                                                 {
@@ -252,19 +252,19 @@ namespace SimpleCommand.API.Patches
                                     }
                                     else
                                     {
-                                        if (module.method != null)
+                                        if (module.Method != null)
                                         {
-                                            __instance.LoadNewNode(module.method(__instance));
+                                            __instance.LoadNewNode(module.Method(__instance));
                                             if (Plugin.configSimpleCommandLogging.Value)
                                             {
-                                                Plugin.Log.LogDebug("Method from module " + module.displayName + " successfully invoked.");
+                                                Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                                             }
                                             LoadNecessarySubmitActions(__instance);
                                             return false;
                                         } 
                                         else
                                         {
-                                            Plugin.Log.LogDebug("No method found for module " + module.displayName);
+                                            Plugin.Log.LogDebug("No Method found for module " + module.DisplayName);
                                         }
                                     }
                                 }
@@ -295,73 +295,73 @@ namespace SimpleCommand.API.Patches
 
         private static bool IterateThroughChildren(SimpleCommandModule module, Terminal instance, string[] screenTextArray, int count)
         {
-            if (module.bSkipModuleOnSubmit == true) 
+            if (module.IgnoreModule == true) 
             {
                 return false;
             }
 
-            if (screenTextArray[count].Replace(" ", "").Equals(module.displayName))
+            if (screenTextArray[count].Replace(" ", "").Equals(module.DisplayName))
             {
                 // Execute the current module
-                if (module.bHasDynamicInput && module.method != null)
+                if (module.HasDynamicInput && module.Method != null)
                 {
-                    instance.LoadNewNode(module.method(instance));
+                    instance.LoadNewNode(module.Method(instance));
 
                     if (Plugin.configSimpleCommandLogging.Value)
                     {
-                        Plugin.Log.LogDebug("Method from module " + module.displayName + " successfully invoked.");
+                        Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                     }
                     return true;
                 }
                 // If the module has children, recursively execute them
-                else if (module.childrenModules != null)
+                else if (module.ChildrenModules != null)
                 {
-                    foreach (SimpleCommandModule childModule in module.childrenModules)
+                    foreach (SimpleCommandModule childModule in module.ChildrenModules)
                     {
                       IterateThroughChildren(childModule, instance, screenTextArray, count+1);
                     }
                 }
-                else if (module.method != null)
+                else if (module.Method != null)
                 {
-                    instance.LoadNewNode(module.method(instance));
+                    instance.LoadNewNode(module.Method(instance));
                     if (Plugin.configSimpleCommandLogging.Value)
                     {
-                        Plugin.Log.LogDebug("Method from module " + module.displayName + " successfully invoked.");
+                        Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                     }
                     return true;
                 }
             }
-            else if (module.abbreviations != null)
+            else if (module.Abbreviations != null)
             {
-                foreach (string abbreviation in module.abbreviations)
+                foreach (string abbreviation in module.Abbreviations)
                 {
                     if (screenTextArray[count].Replace(" ", "").Equals(abbreviation))
                     {
                         // Execute the current module
-                        if (module.bHasDynamicInput && module.method != null)
+                        if (module.HasDynamicInput && module.Method != null)
                         {
-                            instance.LoadNewNode(module.method(instance));
+                            instance.LoadNewNode(module.Method(instance));
 
                             if (Plugin.configSimpleCommandLogging.Value)
                             {
-                                Plugin.Log.LogDebug("Method from module " + module.displayName + " successfully invoked.");
+                                Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                             }
                             return true;
                         }
                         // If the module has children, recursively execute them
-                        else if (module.childrenModules != null)
+                        else if (module.ChildrenModules != null)
                         {
-                            foreach (SimpleCommandModule childModule in module.childrenModules)
+                            foreach (SimpleCommandModule childModule in module.ChildrenModules)
                             {
                                 IterateThroughChildren(childModule, instance, screenTextArray, count + 1);
                             }
                         }
-                        else if (module.method != null)
+                        else if (module.Method != null)
                         {
-                            instance.LoadNewNode(module.method(instance));
+                            instance.LoadNewNode(module.Method(instance));
                             if (Plugin.configSimpleCommandLogging.Value)
                             {
-                                Plugin.Log.LogDebug("Method from module " + module.displayName + " successfully invoked.");
+                                Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                             }
                             return true;
                         }
@@ -372,11 +372,50 @@ namespace SimpleCommand.API.Patches
             return false;
         }
 
+        private static void AddChildrenToList(SimpleCommandModule module, string nestedString, List<string> commands)
+        {
+            string nestedText = nestedString + " " + module.DisplayName.ToUpper();
+            if (module.HideFromCommandList == false)
+            {
+                string text = "\n>" + nestedText;
+                if (module.Arguments != null && module.HasDynamicInput)
+                {
+                    foreach (string Arguments in module.Arguments)
+                    {
+                        text += " [" + Arguments.ToLower() + "]";
+                    }
+                }
+                if (module.Abbreviations != null)
+                {
+                    text += " (short. ";
+                    foreach (string abbreviation in module.Abbreviations)
+                    {
+                        text += abbreviation.ToLower() + ", ";
+                    }
+                    text = text[..^2] + ")";
+                }
+                text += "\n";
+
+                if (module.Description != null)
+                {
+                    text += module.Description + "\n";
+                }
+                commands.Add(text);
+            }
+            if (module.ChildrenModules != null)
+            {
+                foreach (SimpleCommandModule childModule in module.ChildrenModules)
+                {
+                    AddChildrenToList(childModule, nestedText, commands);
+                }
+            }
+        }
+
         private static void LoadNecessarySubmitActions(Terminal instance)
         {
             if (Plugin.configSimpleCommandLogging.Value)
             {
-                Plugin.Log.LogDebug("Loading necessary actions after method submit.");
+                Plugin.Log.LogDebug("Loading necessary actions after Method submit.");
             }
             instance.screenText.text = instance.screenText.text.Substring(0, instance.screenText.text.Length - instance.textAdded);
             instance.currentText = instance.screenText.text;
