@@ -32,7 +32,7 @@ This method will get called if the player enters the command.
 Method: ReviveDeadPlayer,
 ```
 > [!WARNING]
-> Your initial method needs to have Terminal as a parameter and a TerminalNode as a return. The TerminalNode will be your text on the terminal after your method was invoked. You can see how to create a TerminalNode [here](##TerminalNode).
+> Your initial method needs to have Terminal as a parameter and a TerminalNode as a return. The TerminalNode will be your text on the terminal after your method was invoked. You can see how to create a TerminalNode [here](#terminalnode).
 ### Description (string) (optional)
 This text will appear in the command list. Tell the player what this command does.
 ```csharp
@@ -58,10 +58,10 @@ If this command is allowed to appear on on the command list. Useful, if you have
 ```csharp
 HideFromCommandList: false,
 ```
-### SkipModuleOnSubmit (bool) (optional)
+### IgnoreModule (bool) (optional)
 Useful for plugins that already have their own system and just want to appear on the command list.
 ```csharp
-SkipModuleOnSubmit: false,
+IgnoreModule: false,
 ```
 ### ChildrenModules (SimpleCommandModule[]) (optional)
 SimpleCommandModules that come after the current module, e.g. revive "player"
