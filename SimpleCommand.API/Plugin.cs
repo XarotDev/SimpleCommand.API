@@ -15,26 +15,26 @@ namespace SimpleCommand.API
     [BepInProcess("Lethal Company.exe")]
     public class Plugin : BaseUnityPlugin
     {
-        public static ConfigEntry<bool> configSimpleCommandSortCommands;
-        public static ConfigEntry<bool> configSimpleCommandLogging;
+        public static ConfigEntry<bool> ConfigSimpleCommandSortCommands;
+        public static ConfigEntry<bool> ConfigSimpleCommandLogging;
         public static ManualLogSource Log;
-        private readonly Harmony harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
+        private readonly Harmony _harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
         private void Awake()
         {
             Log = Logger;
-            configSimpleCommandSortCommands = Config.Bind("General", "SortCommandsAlphabetically", false, "By default, commands are sorted by plugin. Set the value to 'true' if you want them to be sorted alphabetically.");
-            configSimpleCommandLogging = Config.Bind("Developer", "EnableDebugLogging", false, "Enables logging of every SimpleCommand.API action.");
+            ConfigSimpleCommandSortCommands = Config.Bind("General", "SortCommandsAlphabetically", false, "By default, commands are sorted by plugin. Set the value to 'true' if you want them to be sorted alphabetically.");
+            ConfigSimpleCommandLogging = Config.Bind("Developer", "EnableDebugLogging", false, "Enables logging of every SimpleCommand.API action.");
 
-            if (configSimpleCommandLogging.Value)
+            if (ConfigSimpleCommandLogging.Value)
             {
                 Log.LogDebug("Debug Logging enabled. Logging..");
-                if (configSimpleCommandSortCommands.Value)
+                if (ConfigSimpleCommandSortCommands.Value)
                 {
                     Log.LogDebug("List of commands is now sorted alphabetically.");
                 }
             }
 
-            harmony.PatchAll();
+            _harmony.PatchAll();
 
             // Command setup
             PrepareSetup();
@@ -46,7 +46,7 @@ namespace SimpleCommand.API
         // Initialize default api commands
         private void PrepareSetup()
         {
-            SimpleCommandModule commandListModule = new SimpleCommandModule
+            var commandListModule = new SimpleCommandModule
             {
                 DisplayName = "modcommands",
                 HideFromCommandList = true,
@@ -62,25 +62,18 @@ namespace SimpleCommand.API
         // Method to show all commands in list
         private static TerminalNode ShowModCommands(Terminal __instance)
         {
-            string list = "All available mod commands: \n";
-            TerminalNode node = ScriptableObject.CreateInstance<TerminalNode>();
+            var list = "All available mod commands: \n";
+            var node = ScriptableObject.CreateInstance<TerminalNode>();
             node.clearPreviousText = true;
 
-            string input = SimpleCommand.GetInputValue(__instance, 1)[0];
+            var input = SimpleCommand.GetInputValue(__instance, 1)[0];
 
-            int requestedPageNum = 1;
-            int highestPageNumber = 1;
+            var requestedPageNum = 1;
+            var highestPageNumber = 1;
 
-            if (int.TryParse(input, out int result))
+            if (int.TryParse(input, out var result))
             {
-                if (result > 1)
-                {
-                    requestedPageNum = result;
-                }
-                else
-                {
-                    requestedPageNum = 1;
-                }
+                requestedPageNum = result > 1 ? result : 1;
             }
 
             if (SimpleCommand.SimpleCommandDictionary != null && SimpleCommand.SimpleCommandDictionary.Count > 0)
@@ -94,13 +87,7 @@ namespace SimpleCommand.API
 
                 if (SimpleCommand.SimpleCommandDictionary.TryGetValue(requestedPageNum, out var stringList))
                 {
-                    foreach (string str in stringList)
-                    {
-                        if (!string.IsNullOrEmpty(str))
-                        {
-                            list += str;
-                        }
-                    }
+                    list = stringList.Where(str => !string.IsNullOrEmpty(str)).Aggregate(list, (current, str) => current + str);
                 }
 
             }
@@ -116,7 +103,7 @@ namespace SimpleCommand.API
     public static class SimpleCommand
     {
         // List where all commands get saved in
-        internal static List<SimpleCommandModule> SimpleCommandList = new List<SimpleCommandModule>();
+        internal static List<SimpleCommandModule> SimpleCommandList = new();
 
         // Dictionary with commands for terminal sorted by page
         internal static SortedDictionary<int, List<string>> SimpleCommandDictionary = new();
@@ -128,7 +115,7 @@ namespace SimpleCommand.API
             if (module.DisplayName != null)
             {
                 SimpleCommandList.Add(module);
-                if (Plugin.configSimpleCommandLogging.Value)
+                if (Plugin.ConfigSimpleCommandLogging.Value)
                 {
                     Plugin.Log.LogDebug("Module " + module.DisplayName + " was successfully registered by SimpleCommand.API.");
                 }
@@ -142,7 +129,7 @@ namespace SimpleCommand.API
         // Additional way to add commands with array
         public static void AddSimpleCommands(SimpleCommandModule[] modules)
         {
-            foreach(SimpleCommandModule module in modules)
+            foreach(var module in modules)
             {
                 AddSimpleCommand(module);
             }
@@ -151,8 +138,8 @@ namespace SimpleCommand.API
         // Remove every punctuation from player sentence input
         public static string RemovePunctuation(string s)
         {
-            StringBuilder stringBuilder = new StringBuilder();
-            foreach (char c in s)
+            var stringBuilder = new StringBuilder();
+            foreach (var c in s)
             {
                 if (!char.IsPunctuation(c)) stringBuilder.Append(c);
             }
@@ -161,8 +148,8 @@ namespace SimpleCommand.API
 
         public static string GetInputValue(Terminal terminal)
         {
-            string input = RemovePunctuation(terminal.screenText.text.Substring(terminal.screenText.text.Length - terminal.textAdded));
-            if (Plugin.configSimpleCommandLogging.Value)
+            var input = RemovePunctuation(terminal.screenText.text.Substring(terminal.screenText.text.Length - terminal.textAdded));
+            if (Plugin.ConfigSimpleCommandLogging.Value)
             {
                 Plugin.Log.LogDebug("GetInputValue:" + input);
             }
@@ -171,14 +158,14 @@ namespace SimpleCommand.API
 
         public static string[] GetInputValue(Terminal terminal, int index)
         {
-            string input = RemovePunctuation(terminal.screenText.text.Substring(terminal.screenText.text.Length - terminal.textAdded));
-            string[] inputArray = input.Split(" ");
-            string[] filteredArray = inputArray.Skip(Math.Max(0, inputArray.Length - index)).Take(index).ToArray();
-            if (Plugin.configSimpleCommandLogging.Value)
+            var input = RemovePunctuation(terminal.screenText.text.Substring(terminal.screenText.text.Length - terminal.textAdded));
+            var inputArray = input.Split(" ");
+            var filteredArray = inputArray.Skip(Math.Max(0, inputArray.Length - index)).Take(index).ToArray();
+            if (Plugin.ConfigSimpleCommandLogging.Value)
             {
-                int i = 1;
+                var i = 1;
                 Plugin.Log.LogDebug("GetInputValue Array:");
-                foreach (string str in filteredArray)
+                foreach (var str in filteredArray)
                 {
                     Plugin.Log.LogDebug(i + ": " + str);
                     i++;

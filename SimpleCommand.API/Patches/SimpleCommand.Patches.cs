@@ -2,7 +2,6 @@
 using SimpleCommand.API.Classes;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using UnityEngine;
 using static SimpleCommand.API.SimpleCommand;
 
@@ -11,34 +10,44 @@ namespace SimpleCommand.API.Patches
     [HarmonyPatch(typeof(Terminal))]
     public class SimpleCommandPatches
     {
-
         [HarmonyPostfix]
         [HarmonyPatch("Awake")]
         private static void PatchAwake(ref Terminal __instance)
         {
-            TMP_InputField inputField = __instance.screenText;
+            var inputField = __instance.screenText;
             List<string> commands = new();
             List<string> lines = new();
-            int pageNumber = 1;
-            int currentLines = 0;
-            int maxVisibleLines = 16;
+            var pageNumber = 1;
+            var currentLines = 0;
+            const int maxVisibleLines = 16;
 
-            if (Plugin.configSimpleCommandLogging.Value)
+            if (Plugin.ConfigSimpleCommandLogging.Value)
             {
                 Plugin.Log.LogDebug("Patching Terminal Awake");
+            }
+
+            if (__instance.terminalNodes.specialNodes[13] != null)
+            {
+                if (Plugin.ConfigSimpleCommandLogging.Value)
+                {
+                    Plugin.Log.LogDebug("Editing SpecialNode 13");
+                }
+                
+                var newnode = __instance.terminalNodes.specialNodes[13];
+                newnode.displayText = newnode.displayText[..^23] + ">MODCOMMANDS [page] (short. mdc, modc, modcmds)\nTo see a list of all SimpleCommand.API commands." + newnode.displayText[^23..];
             }
             
             if (SimpleCommandList != null && SimpleCommandList.Count > 0)
             {
-                foreach (SimpleCommandModule module in SimpleCommandList)
+                foreach (var module in SimpleCommandList)
                 {
                     if (module.HideFromCommandList == false)
                     {
-                        string text = "";
+                        var text = "";
                         text += "\n>" + module.DisplayName.ToUpper();
                         if (module.Arguments != null && module.HasDynamicInput)
                         {
-                            foreach (string param in module.Arguments)
+                            foreach (var param in module.Arguments)
                             {
                                 text += " [" + param.ToLower() + "]";
                             }
@@ -46,7 +55,7 @@ namespace SimpleCommand.API.Patches
                         if (module.Abbreviations != null)
                         {
                             text += " (short. ";
-                            foreach (string abbreviation in module.Abbreviations)
+                            foreach (var abbreviation in module.Abbreviations)
                             {
                                 text += abbreviation.ToLower() + ", ";
                             }
@@ -62,21 +71,21 @@ namespace SimpleCommand.API.Patches
                     }
                     if (module.ChildrenModules != null)
                     {
-                        foreach (SimpleCommandModule childModule in module.ChildrenModules)
+                        foreach (var childModule in module.ChildrenModules)
                         {
                             AddChildrenToList(childModule, module.DisplayName.ToUpper(), commands);
                         }
                     }
                 }
 
-                if (Plugin.configSimpleCommandSortCommands.Value == true)
+                if (Plugin.ConfigSimpleCommandSortCommands.Value == true)
                 {
                     commands.Sort();
                 }
 
-                foreach (string command in commands)
+                foreach (var command in commands)
                 {
-                    int lineCount = Mathf.CeilToInt(inputField.textComponent.GetTextInfo(command).lineCount);
+                    var lineCount = Mathf.CeilToInt(inputField.textComponent.GetTextInfo(command).lineCount);
 
                     if (currentLines + lineCount <= maxVisibleLines)
                     {
@@ -85,7 +94,7 @@ namespace SimpleCommand.API.Patches
                     }
                     else
                     {
-                        int distance = maxVisibleLines - currentLines;
+                        var distance = maxVisibleLines - currentLines;
                         if (distance > 0)
                         {
                             string fillLines = new('\n', distance);
@@ -104,7 +113,7 @@ namespace SimpleCommand.API.Patches
 
                 if (lines.Count > 0)
                 {
-                    int distance = maxVisibleLines - currentLines;
+                    var distance = maxVisibleLines - currentLines;
                     if (distance > 0)
                     {
                         string fillLines = new('\n', distance);
@@ -114,7 +123,7 @@ namespace SimpleCommand.API.Patches
                 }
                 else if (lines.Count == 0)
                 {
-                    string error = "\n [ERROR] No commands added to list..\n";
+                    var error = "\n [ERROR] No commands added to list..\n";
                     string fillLines = new('\n', maxVisibleLines-2);
                     lines.Add(error);
                     lines.Add(fillLines);
@@ -131,10 +140,10 @@ namespace SimpleCommand.API.Patches
             {
                 if (SimpleCommandList != null && SimpleCommandList.Count > 0)
                 {
-                    string screenTextString = RemovePunctuation(__instance.screenText.text.Substring(__instance.screenText.text.Length - __instance.textAdded));
-                    string[] screenTextArray = screenTextString.Split(" ", System.StringSplitOptions.RemoveEmptyEntries);
+                    var screenTextString = RemovePunctuation(__instance.screenText.text.Substring(__instance.screenText.text.Length - __instance.textAdded));
+                    var screenTextArray = screenTextString.Split(" ", System.StringSplitOptions.RemoveEmptyEntries);
 
-                    foreach (SimpleCommandModule module in SimpleCommandList)
+                    foreach (var module in SimpleCommandList)
                     {
                         if (screenTextString.Replace(" ", "") == "")
                         {
@@ -154,7 +163,7 @@ namespace SimpleCommand.API.Patches
                                 Plugin.Log.LogWarning(screenTextArray[0].Replace(" ", "") + " already exists as a default terminal keyword. This might cause issues.");
                             }
 
-                            if (Plugin.configSimpleCommandLogging.Value)
+                            if (Plugin.ConfigSimpleCommandLogging.Value)
                             {
                                 Plugin.Log.LogDebug("Player submitted sentence: " + screenTextString);
                             }
@@ -166,7 +175,7 @@ namespace SimpleCommand.API.Patches
                                     if (module.Method != null)
                                     {
                                         __instance.LoadNewNode(module.Method(__instance));
-                                        if (Plugin.configSimpleCommandLogging.Value)
+                                        if (Plugin.ConfigSimpleCommandLogging.Value)
                                         {
                                             Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                                         }
@@ -180,7 +189,7 @@ namespace SimpleCommand.API.Patches
                                 }
                                 else if (module.ChildrenModules != null)
                                 {
-                                    foreach (SimpleCommandModule childModule in module.ChildrenModules)
+                                    foreach (var childModule in module.ChildrenModules)
                                     {
                                         if (IterateThroughChildren(childModule, __instance, screenTextArray, 1))
                                         {
@@ -195,7 +204,7 @@ namespace SimpleCommand.API.Patches
                                 if (module.Method != null)
                                 {
                                     __instance.LoadNewNode(module.Method(__instance));
-                                    if (Plugin.configSimpleCommandLogging.Value)
+                                    if (Plugin.ConfigSimpleCommandLogging.Value)
                                     {
                                         Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                                     }
@@ -210,11 +219,11 @@ namespace SimpleCommand.API.Patches
                         }
                         else if (module.Abbreviations != null)
                         {
-                            foreach (string abbreviation in module.Abbreviations)
+                            foreach (var abbreviation in module.Abbreviations)
                             {
                                 if (screenTextArray[0].Replace(" ", "").Equals(abbreviation))
                                 {
-                                    if (Plugin.configSimpleCommandLogging.Value)
+                                    if (Plugin.ConfigSimpleCommandLogging.Value)
                                     {
                                         Plugin.Log.LogDebug("Player submitted sentence: " + screenTextString);
                                     }
@@ -226,7 +235,7 @@ namespace SimpleCommand.API.Patches
                                             if (module.Method != null)
                                             {
                                                 __instance.LoadNewNode(module.Method(__instance));
-                                                if (Plugin.configSimpleCommandLogging.Value)
+                                                if (Plugin.ConfigSimpleCommandLogging.Value)
                                                 {
                                                     Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                                                 }
@@ -240,7 +249,7 @@ namespace SimpleCommand.API.Patches
                                         }
                                         else if (module.ChildrenModules != null)
                                         {
-                                            foreach (SimpleCommandModule childModule in module.ChildrenModules)
+                                            foreach (var childModule in module.ChildrenModules)
                                             {
                                                 if (IterateThroughChildren(childModule, __instance, screenTextArray, 1))
                                                 {
@@ -255,7 +264,7 @@ namespace SimpleCommand.API.Patches
                                         if (module.Method != null)
                                         {
                                             __instance.LoadNewNode(module.Method(__instance));
-                                            if (Plugin.configSimpleCommandLogging.Value)
+                                            if (Plugin.ConfigSimpleCommandLogging.Value)
                                             {
                                                 Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                                             }
@@ -276,23 +285,6 @@ namespace SimpleCommand.API.Patches
             return true;
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch("ParsePlayerSentence")]
-        private static void PatchHelpNode(ref Terminal __instance, ref TerminalNode __result)
-        {
-            string screenTextString = RemovePunctuation(__instance.screenText.text.Substring(__instance.screenText.text.Length - __instance.textAdded));
-            if (screenTextString == "help")
-            {
-                TerminalNode newnode = ScriptableObject.CreateInstance<TerminalNode>();
-                newnode.displayText = __result.displayText[..^23] + ">MODCOMMANDS [page] (short. mdc, modc, modcmds)\nTo see a list of all SimpleCommand.API commands." + __result.displayText[^23..];
-                newnode.terminalEvent = "";
-                newnode.clearPreviousText = true;
-
-                __result = newnode;
-                return;
-            }
-        }
-
         private static bool IterateThroughChildren(SimpleCommandModule module, Terminal instance, string[] screenTextArray, int count)
         {
             if (module.IgnoreModule == true) 
@@ -307,7 +299,7 @@ namespace SimpleCommand.API.Patches
                 {
                     instance.LoadNewNode(module.Method(instance));
 
-                    if (Plugin.configSimpleCommandLogging.Value)
+                    if (Plugin.ConfigSimpleCommandLogging.Value)
                     {
                         Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                     }
@@ -316,7 +308,7 @@ namespace SimpleCommand.API.Patches
                 // If the module has children, recursively execute them
                 else if (module.ChildrenModules != null)
                 {
-                    foreach (SimpleCommandModule childModule in module.ChildrenModules)
+                    foreach (var childModule in module.ChildrenModules)
                     {
                       IterateThroughChildren(childModule, instance, screenTextArray, count+1);
                     }
@@ -324,7 +316,7 @@ namespace SimpleCommand.API.Patches
                 else if (module.Method != null)
                 {
                     instance.LoadNewNode(module.Method(instance));
-                    if (Plugin.configSimpleCommandLogging.Value)
+                    if (Plugin.ConfigSimpleCommandLogging.Value)
                     {
                         Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                     }
@@ -333,7 +325,7 @@ namespace SimpleCommand.API.Patches
             }
             else if (module.Abbreviations != null)
             {
-                foreach (string abbreviation in module.Abbreviations)
+                foreach (var abbreviation in module.Abbreviations)
                 {
                     if (screenTextArray[count].Replace(" ", "").Equals(abbreviation))
                     {
@@ -342,7 +334,7 @@ namespace SimpleCommand.API.Patches
                         {
                             instance.LoadNewNode(module.Method(instance));
 
-                            if (Plugin.configSimpleCommandLogging.Value)
+                            if (Plugin.ConfigSimpleCommandLogging.Value)
                             {
                                 Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                             }
@@ -351,7 +343,7 @@ namespace SimpleCommand.API.Patches
                         // If the module has children, recursively execute them
                         else if (module.ChildrenModules != null)
                         {
-                            foreach (SimpleCommandModule childModule in module.ChildrenModules)
+                            foreach (var childModule in module.ChildrenModules)
                             {
                                 IterateThroughChildren(childModule, instance, screenTextArray, count + 1);
                             }
@@ -359,7 +351,7 @@ namespace SimpleCommand.API.Patches
                         else if (module.Method != null)
                         {
                             instance.LoadNewNode(module.Method(instance));
-                            if (Plugin.configSimpleCommandLogging.Value)
+                            if (Plugin.ConfigSimpleCommandLogging.Value)
                             {
                                 Plugin.Log.LogDebug("Method from module " + module.DisplayName + " successfully invoked.");
                             }
@@ -374,21 +366,21 @@ namespace SimpleCommand.API.Patches
 
         private static void AddChildrenToList(SimpleCommandModule module, string nestedString, List<string> commands)
         {
-            string nestedText = nestedString + " " + module.DisplayName.ToUpper();
+            var nestedText = nestedString + " " + module.DisplayName.ToUpper();
             if (module.HideFromCommandList == false)
             {
-                string text = "\n>" + nestedText;
+                var text = "\n>" + nestedText;
                 if (module.Arguments != null && module.HasDynamicInput)
                 {
-                    foreach (string Arguments in module.Arguments)
+                    foreach (var arguments in module.Arguments)
                     {
-                        text += " [" + Arguments.ToLower() + "]";
+                        text += " [" + arguments.ToLower() + "]";
                     }
                 }
                 if (module.Abbreviations != null)
                 {
                     text += " (short. ";
-                    foreach (string abbreviation in module.Abbreviations)
+                    foreach (var abbreviation in module.Abbreviations)
                     {
                         text += abbreviation.ToLower() + ", ";
                     }
@@ -404,7 +396,7 @@ namespace SimpleCommand.API.Patches
             }
             if (module.ChildrenModules != null)
             {
-                foreach (SimpleCommandModule childModule in module.ChildrenModules)
+                foreach (var childModule in module.ChildrenModules)
                 {
                     AddChildrenToList(childModule, nestedText, commands);
                 }
@@ -413,7 +405,7 @@ namespace SimpleCommand.API.Patches
 
         private static void LoadNecessarySubmitActions(Terminal instance)
         {
-            if (Plugin.configSimpleCommandLogging.Value)
+            if (Plugin.ConfigSimpleCommandLogging.Value)
             {
                 Plugin.Log.LogDebug("Loading necessary actions after Method submit.");
             }

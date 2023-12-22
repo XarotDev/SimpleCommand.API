@@ -1,4 +1,14 @@
 # SimpleCommand.API [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+> [!NOTE]
+> This plugin is designed to help developers. So if certain features are missing, please do not hesitate to contact me.
+
+This plugin currently features:
+- Mod Command List with all available mod commands
+- Nested Command Structure
+
+## Oversimplified
+![how-it-works](https://github.com/XarotDev/SimpleCommand.API/assets/127869475/df8d785c-8606-4f3f-acac-b85cc200cea4)
+
 ## Introduction
 
 To create new commands for the Terminal, this plugin uses a nested structure of a class called **SimpleCommandModule**. This allows the user to create complex command structures with ease. Every command will get added to the **SimpleCommandList**, if not specified otherwise.
