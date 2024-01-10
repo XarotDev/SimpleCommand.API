@@ -83,6 +83,14 @@ namespace SimpleCommand.API.Patches
                     commands.Sort();
                 }
 
+                if (Plugin.ConfigSimpleCommandLogging.Value)
+                {
+                    Plugin.Log.LogDebug("Creating SimpleCommandDictionary");
+                }
+                // On every game start, the dictionary gets cleared
+                // Prevents double insertion and makes adding plugins later possible 
+                SimpleCommandDictionary = new SortedDictionary<int, List<string>>();
+
                 foreach (var command in commands)
                 {
                     var lineCount = Mathf.CeilToInt(inputField.textComponent.GetTextInfo(command).lineCount);
@@ -101,7 +109,7 @@ namespace SimpleCommand.API.Patches
                             lines.Add(fillLines);
                         }
 
-                        SimpleCommandDictionary.Add(pageNumber, lines);
+                        SimpleCommandDictionary.TryAdd(pageNumber, lines);
                         lines = new()
                         {
                             command
@@ -119,7 +127,7 @@ namespace SimpleCommand.API.Patches
                         string fillLines = new('\n', distance);
                         lines.Add(fillLines);
                     }
-                    SimpleCommandDictionary.Add(pageNumber, lines);
+                    SimpleCommandDictionary.TryAdd(pageNumber, lines);
                 }
                 else if (lines.Count == 0)
                 {
@@ -127,7 +135,7 @@ namespace SimpleCommand.API.Patches
                     string fillLines = new('\n', maxVisibleLines-2);
                     lines.Add(error);
                     lines.Add(fillLines);
-                    SimpleCommandDictionary.Add(pageNumber, lines);
+                    SimpleCommandDictionary.TryAdd(pageNumber, lines);
                 }
             }
         }
